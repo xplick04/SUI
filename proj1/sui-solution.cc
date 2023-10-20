@@ -35,7 +35,7 @@ std::vector<SearchAction> BreadthFirstSearch::solve(const SearchState &init_stat
 						break;
 					}
 				}
-				for(auto &state: open)
+				for(auto &state: open) 
 				{
 					if(state.first<stateAndPath.first) // equals checking
 					{
