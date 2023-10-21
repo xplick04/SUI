@@ -2,10 +2,12 @@
 #include "search-strategies.h"
 #include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <ostream>
 #include <utility>
 #include <queue>
 #include <set>
+#include <vector>
 
 
 class Path { 
@@ -60,59 +62,46 @@ std::vector<SearchAction> BreadthFirstSearch::solve(const SearchState &init_stat
 }
 
 
+int PathDepth(Path *pathToCurrent)
+{
+	int height = 0;
+	Path *action = pathToCurrent;
+
+	while (action->parent != nullptr)
+	{
+		height++;
+	  	action = action->parent;
+	}
+
+  	return height;
+}
+
 std::vector<SearchAction> DepthFirstSearch::solve(const SearchState &init_state) {
-	std::vector<std::pair<SearchState, std::vector<SearchAction>>> open;
-		std::vector<SearchState> close;
-		SearchState working_state(init_state);
-		std::vector<SearchAction> empty;
+	std::deque<std::pair<SearchState, Path *>> open;
 
-		open.push_back(std::make_pair(working_state, empty));
+	open.push_back(std::make_pair(init_state, new Path(init_state.actions()[0], nullptr)));
+	
+	while(!open.empty())
+	{
+		auto [currentState, pathToCurrent] = open.back();
 		
-		while(!open.empty())
+		if(currentState.isFinal())
+			return ReconstructPath(pathToCurrent);
+
+		open.pop_back();
+
+		if (PathDepth(pathToCurrent) == this->depth_limit_)
+		  continue;
+
+		for(auto &action : currentState.actions())
 		{
-			std::pair<SearchState, std::vector<SearchAction>> stateAndPath = open.back();
-			open.pop_back();
-			close.push_back(stateAndPath.first);
-			
-			if(stateAndPath.first.isFinal()) 
-			{
-				return stateAndPath.second;
-			}
+			auto nextState = action.execute(currentState);
 
-			auto actions = stateAndPath.first.actions();
-			if(actions.size() == 0) continue;
-
-			for(auto &action: actions)
-			{
-				bool found = false;
-				stateAndPath.second.push_back(action);
-				for(auto &state: close)
-				{
-					if(state<stateAndPath.first) // equals checking
-					{
-						found = true;
-						break;
-					}
-				}
-				for(auto &state: open)
-				{
-					if(state.first<stateAndPath.first) // equals checking
-					{
-						found = true;
-						break;
-					}
-				}
-				if(!found)
-				{
-					if(action.execute(stateAndPath.first).isFinal())
-					{
-						return stateAndPath.second;
-					}
-					open.push_back(std::make_pair(action.execute(stateAndPath.first), stateAndPath.second));
-				}
-				stateAndPath.second.pop_back();
-			}		
-		}
+			open.push_back(std::make_pair(nextState, new Path(action, pathToCurrent)));
+			if (nextState.isFinal())
+				break;
+		}		
+	}
 	return {};
 }
 
