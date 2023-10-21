@@ -15,6 +15,20 @@ class Path {
 	Path(SearchAction action, Path* parent = nullptr) : action(action), parent(parent) {}
 };
 
+std::vector<SearchAction> ReconstructPath(Path *pathToCurrent)
+{
+	std::vector<SearchAction> path;
+	Path *action = pathToCurrent;
+
+	do
+	{
+		path.push_back(action->action);
+	} while((action = action->parent)->parent != nullptr);
+
+	std::reverse(path.begin(), path.end());
+
+	return path;
+}
 
 std::vector<SearchAction> BreadthFirstSearch::solve(const SearchState &init_state) {
 		std::queue<std::pair<SearchState, Path *>> open;
@@ -27,20 +41,7 @@ std::vector<SearchAction> BreadthFirstSearch::solve(const SearchState &init_stat
 			auto [currentState, pathToCurrent] = open.front();
 
 			if(currentState.isFinal())
-			{
-				// NOTE: this branch reconstructs actions path from currentState to root
-				std::vector<SearchAction> path;
-				Path *action = pathToCurrent;
-
-				do
-				{
-					path.push_back(action->action);
-				} while((action = action->parent)->parent != nullptr);
-
-				std::reverse(path.begin(), path.end());
-
-				return path;
-			}
+				return ReconstructPath(pathToCurrent);	
 
 			open.pop();
 
