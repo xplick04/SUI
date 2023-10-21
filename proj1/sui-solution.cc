@@ -33,31 +33,31 @@ std::vector<SearchAction> ReconstructPath(Path *pathToCurrent)
 }
 
 std::vector<SearchAction> BreadthFirstSearch::solve(const SearchState &init_state) {
-		std::queue<std::pair<SearchState, Path *>> open;
-		std::set<SearchState> closed;
+	std::queue<std::pair<SearchState, Path *>> open;
+	std::set<SearchState> closed;
 
-		open.push(std::make_pair(init_state, new Path(SearchAction(init_state.actions()[0]), nullptr)));  // first state
-		
-		while(!open.empty())
+	open.push(std::make_pair(init_state, new Path(SearchAction(init_state.actions()[0]), nullptr)));  // first state
+	
+	while(!open.empty())
+	{
+		auto [currentState, pathToCurrent] = open.front();
+
+		if(currentState.isFinal())
+			return ReconstructPath(pathToCurrent);	
+
+		open.pop();
+
+		for(auto &action: currentState.actions())
 		{
-			auto [currentState, pathToCurrent] = open.front();
+			auto nextState = action.execute(currentState);
+			if (closed.count(nextState))
+				continue;  // action already expanded => skip it
 
-			if(currentState.isFinal())
-				return ReconstructPath(pathToCurrent);	
+			closed.insert(nextState);  // OPTIM: save some description of state instead
 
-			open.pop();
-
-			for(auto &action: currentState.actions())
-			{
-				auto nextState = action.execute(currentState);
-				if (closed.count(nextState))
-					continue;  // action already expanded => skip it
-
-				closed.insert(nextState);  // OPTIM: save some description of state instead
-
-				open.push(std::make_pair(nextState, new Path(action, pathToCurrent)));
-			}	
-		}
+			open.push(std::make_pair(nextState, new Path(action, pathToCurrent)));
+		}	
+	}
 	return {};
 }
 
