@@ -2,6 +2,7 @@
 #include "search-strategies.h"
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <iterator>
 #include <ostream>
 #include <utility>
@@ -134,24 +135,48 @@ struct AStarComparator {
 };
 
 std::vector<SearchAction> AStarSearch::solve(const SearchState &init_state) {
-	std::priority_queue<State *, std::deque<State *>, AStarComparator> open;  // PERF: best subtype????
+  	std::priority_queue<State *, std::deque<State *>, AStarComparator> open;  // PERF: best subtype????
+	std::set<SearchState> closed;
+
+	open.push(new State(init_state, init_state.actions()[0], compute_heuristic(init_state, *heuristic_), nullptr));
+
+	while (!open.empty())
+	{
+		auto current = open.top();
+		open.pop();
+
+		if (closed.count(current->state))
+			continue;
+		
+		closed.insert(current->state);
 
 
-	open.push(new State(init_state, init_state.actions()[0], 3));
-	open.push(new State(init_state, init_state.actions()[0], 1));
-	open.push(new State(init_state, init_state.actions()[0], 4));
-	open.push(new State(init_state, init_state.actions()[0], 2));
+		if (current->state.isFinal())
+		{
+	  	  	std::vector<SearchAction> path;
+	  	  	State *action = current;
 
-	std::cout << "====" << std::endl;
-	std::cout << open.top()->score << std::endl;
-	open.pop();
-	std::cout << open.top()->score << std::endl;
-	open.pop();
-	std::cout << open.top()->score << std::endl;
-	open.pop();
-	std::cout << open.top()->score << std::endl;
-	open.pop();
-	std::cout << "====" << std::endl;
+	  	  	do
+	  	  	{
+		  	  	path.push_back(action->action);
+	  	  	} while((action = action->parent)->parent != nullptr);
+
+	  	  	std::reverse(path.begin(), path.end());
+
+	  	  	return path;
+		}
+
+		for (auto &action : current->state.actions())
+		{
+			SearchState nextState = action.execute(current->state);
+			if (closed.count(nextState))
+				continue;
+			unsigned int score = compute_heuristic(nextState, *heuristic_) + current->score;
+
+			open.push(new State(nextState, action, score, current));
+		}
+
+	}
 
 	return {};
 }
