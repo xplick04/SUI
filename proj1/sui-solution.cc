@@ -156,52 +156,42 @@ double StudentHeuristic::distanceLowerBound(const GameState &state) const {
 	
 	int cards_in_wrong_order = 0;
 	for (const auto &stack : state.stacks) {
-		std::ostringstream outputStream;
-		outputStream << stack;
-		std::istringstream inputStream(outputStream.str());
-		std::string item;
-		inputStream >> item;
-		if(item != "_")
+		Color prevCol = Color::Heart;
+		int prevVal = -1;
+
+		for (auto &card : stack.storage())
 		{
-			int val, col, prevVal, prevCol;
-			getCardValue(item, prevVal, prevCol);
-			while(inputStream >> item)
+			if (prevVal == -1)
 			{
-				getCardValue(item, val, col);
-				if(!(prevVal - val == 1 && prevCol == col)) cards_in_wrong_order++;
-				
-				prevVal = val;
-				prevCol = col;
+		  	  	prevCol = card.color;
+			  	prevVal = card.value;	
+				continue;
 			}
+
+			if(!(prevVal - card.value == 1 && prevCol == card.color)) cards_in_wrong_order++;
+			
+		  	prevCol = card.color;
+			prevVal = card.value;	
 		}
     }
 
 
 	int lowest_card_distance = 0;
     for (const auto &stack : state.stacks) {
-        std::ostringstream outputStream;
-        outputStream << stack;
-        std::istringstream inputStream(outputStream.str());
-        std::string item;
-        inputStream >> item;
-        if(item != "")
-        {
-            int val, col;
-            int min, minDistance = 14;
-            while(inputStream >> item)
-            {
-                getCardValue(item, val, col);
-                if(val < min)
-                {
-                    min = val;
-                    minDistance = 0;
-                }
-                minDistance++;
-            }
+		int min = 14, minDistance = 14;
+
+		for (auto &card : stack.storage())
+		{
+			if (card.value < min)
+			{
+				min = card.value;
+				minDistance = 0;
+			}
+			minDistance++;
+		}
         lowest_card_distance += minDistance;
-        }
     }
-	
+
 	return (cards_out_of_home - cards_in_home) + freeCells_occupied + (0.05 * cards_in_wrong_order) + (0.05 * lowest_card_distance);
 }
 
