@@ -215,7 +215,7 @@ struct AStarComparator {
 };
 
 std::vector<SearchAction> AStarSearch::solve(const SearchState &init_state) {
-  	std::priority_queue<State *, std::deque<State *>, AStarComparator> open;  // PERF: best subtype????
+  	std::priority_queue<State *, std::deque<State *>, AStarComparator> open;
 	std::set<SearchState> closed;
 
 	open.push(new State(init_state, init_state.actions()[0], compute_heuristic(init_state, *heuristic_), nullptr));
