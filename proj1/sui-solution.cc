@@ -109,6 +109,42 @@ double StudentHeuristic::distanceLowerBound(const GameState &state) const {
     return 0;
 }
 
+
+class State{ 
+  public: 
+    SearchState state;
+    SearchAction action;  // PERF: reoder structure elements due to padding
+    unsigned int score;
+    State *parent;
+
+	State(SearchState state, SearchAction action, double score, State *parent = nullptr) : state(state), action(action), score(score), parent(parent) {}
+};
+
+struct AStarComparator {
+    bool operator() (State *a, State *b) {
+        return a->score > b->score;
+    }
+};
+
 std::vector<SearchAction> AStarSearch::solve(const SearchState &init_state) {
+	std::priority_queue<State *, std::deque<State *>, AStarComparator> open;  // PERF: best subtype????
+
+
+	open.push(new State(init_state, init_state.actions()[0], 3));
+	open.push(new State(init_state, init_state.actions()[0], 1));
+	open.push(new State(init_state, init_state.actions()[0], 4));
+	open.push(new State(init_state, init_state.actions()[0], 2));
+
+	std::cout << "====" << std::endl;
+	std::cout << open.top()->score << std::endl;
+	open.pop();
+	std::cout << open.top()->score << std::endl;
+	open.pop();
+	std::cout << open.top()->score << std::endl;
+	open.pop();
+	std::cout << open.top()->score << std::endl;
+	open.pop();
+	std::cout << "====" << std::endl;
+
 	return {};
 }
