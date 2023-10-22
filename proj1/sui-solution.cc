@@ -106,7 +106,14 @@ std::vector<SearchAction> DepthFirstSearch::solve(const SearchState &init_state)
 }
 
 double StudentHeuristic::distanceLowerBound(const GameState &state) const {
-    return 0;
+    int cards_out_of_home = king_value * colors_list.size();
+    for (const auto &home : state.homes) {
+        auto opt_top = home.topCard();
+        if (opt_top.has_value())
+            cards_out_of_home -= opt_top->value;
+    }
+
+    return cards_out_of_home;
 }
 
 
