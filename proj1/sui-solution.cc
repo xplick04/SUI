@@ -1,5 +1,7 @@
 #include "search-interface.h"
 #include "search-strategies.h"
+#include "card.h"
+#include "memusage.h"
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -43,6 +45,9 @@ std::vector<SearchAction> BreadthFirstSearch::solve(const SearchState &init_stat
 	
 	while(!open.empty())
 	{
+		if (getCurrentRSS() + 50000000 >= mem_limit_)
+			return {};
+
 		auto [currentState, pathToCurrent] = open.front();
 
 		if(currentState.isFinal())
@@ -86,6 +91,9 @@ std::vector<SearchAction> DepthFirstSearch::solve(const SearchState &init_state)
 	
 	while(!open.empty())
 	{
+		if (getCurrentRSS() + 50000000 >= mem_limit_)
+			return {};
+
 		auto [currentState, pathToCurrent] = open.back();
 		
 		if(currentState.isFinal())
@@ -221,6 +229,9 @@ std::vector<SearchAction> AStarSearch::solve(const SearchState &init_state) {
 	open.push(new State(init_state, init_state.actions()[0], compute_heuristic(init_state, *heuristic_), nullptr));
 	while (!open.empty())
 	{
+		if (getCurrentRSS() + 50000000 >= mem_limit_)
+			return {};
+
 		auto current = open.top();
 		open.pop();
 
